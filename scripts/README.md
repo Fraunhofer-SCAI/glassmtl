@@ -9,12 +9,12 @@ This folder contains scripts to reproduce the results from our paper.
 The folder `exps/` contains scripts that can be used to reproduce the experiments from our paper. To this end, run 
 
 ```bash
-python -m scripts.exps.sample_efficiency flag
+python -m scripts.exps.sample_efficiency prop
 ```
 
-in the root folder, where `flag` is `YM_Density`, `YM_Density_RI`, `LogViscosity_Tg`, or `LogViscosity_Tg_t`. 
+in the root folder, where `prop` is `YM_Density`, `YM_Density_RI`, `LogViscosity_Tg`, or `LogViscosity_Tg_t`. 
 This starts `MAX_N_PROCESSES` (default 8) separate processes which are run in parallel.
-The results are saved with specified identifier (default is current timestamp) to `glassmtl/results/`.
+The results are saved with a specified identifier (default is the current timestamp) to `glassmtl/results/`.
 
 
 
