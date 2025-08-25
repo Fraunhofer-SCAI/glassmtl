@@ -1,0 +1,1 @@
+This folder contains all preprocessed datasets that are used in our paper and which are subsequently split in the experiments into training, validation, and test sets. In case of the log-viscosity, the file `all_t.csv` lists the temperature as extra parameter for the parametric training. The folder `LogViscosity/` contains the log-viscosity data at all available temperatures.
