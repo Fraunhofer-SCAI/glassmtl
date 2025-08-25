@@ -3,4 +3,4 @@ __pycache__/
 *.ipynb
 lightning_logs/
 checkpoints/
-*params_
+params_*
