@@ -112,7 +112,7 @@ if __name__ == '__main__':
     # non-random multitask learning, random multitask learning
     exps = ['only_p1_single', 'aux_p_pad', 'aux_p_random_pad']
     n_folds = 5
-    # Current date and time for timestamp dd_mm_YY_HH:MM
+    # Current date and time for timestamp dd_mm_YY_HH:MM:SS
     ident = datetime.now().strftime("%d_%m_%Y_%H:%M:%S") 
           
     prop = sys.argv[1]

@@ -21,4 +21,4 @@ ELEMENTS = [  # 67 elements (including X)
 
 # Maximum number of processes to be run in parallel
 # Set lower value if you run out of memory
-MAX_N_PROCESSES = 8
+MAX_N_PROCESSES = 80
