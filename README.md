@@ -1,6 +1,6 @@
 # Multitask Learning via Task Embeddings for Glass Property Prediction with Improved Sample Efficiency
 
-This is the official repository providing data and code accompanying the paper [...]
+This is the official repository providing data and code accompanying the paper [Multitask Learning via Task Embeddings for Glass Property Prediction with Improved Sample Efficiency](https://dx.doi.org/10.2139/ssrn.4986525)
 
 
 ## Software Setup
@@ -17,8 +17,15 @@ The current setup was tested with Python version 3.12.3.
 ## How to cite
 
 When using or referring to this work, please cite it as follows:
+
 ```bash
-[...]
+@misc{maier2025multitask,
+  title={Multitask Learning via Task Embeddings for Glass Property Prediction with Improved Sample Efficiency},
+  author={Maier, Gregor and Hamaekers, Jan and Ziebarth, Benedikt},
+  year={2025},
+  doi={https://dx.doi.org/10.2139/ssrn.4986525},
+  note={Available at SSRN 4986525},
+}
 ```
 
 
