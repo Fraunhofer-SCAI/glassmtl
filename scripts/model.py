@@ -448,7 +448,7 @@ class GlassAttentionNet(pl.LightningModule):
         x, y = predict_batch
         yhat, mask = self.forward(x)
 
-        # Safe true and predicted results
+        # Save true and predicted results
         y_test = scaler.inverse_transform(y.detach().cpu().numpy())
         yhat_test = scaler.inverse_transform(yhat.detach().cpu().numpy())
         df_test = pd.DataFrame({'y': y_test.ravel(), 
