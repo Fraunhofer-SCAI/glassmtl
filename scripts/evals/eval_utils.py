@@ -9,6 +9,9 @@ import numpy as np
 from sklearn import metrics
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+import seaborn as sns
+from io import BytesIO
+from PIL import Image
 import os
 
 
@@ -832,3 +835,180 @@ test_{fold}/{exp}/results/test_{frac}.csv'
         ax[2].grid()
 
         plt.savefig(self.path + 'LogViscosity_Tg.png', dpi=600)
+
+
+
+####################
+# Correlation plots
+####################
+
+# Adapted from 
+# https://stackoverflow.com/questions/48139899/correlation-matrix-plot-with-coefficients-on-one-side-scatterplots-on-another?noredirect=1&lq=1
+def corrdot(*args, **kwargs):
+    corr_r = args[0].corr(args[1], 'pearson')
+    corr_text = f"{corr_r:2.2f}".replace("0.", ".")
+    ax = plt.gca()
+    ax.set_axis_off()
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    marker_size = abs(corr_r) * 10000
+    ax.scatter([.5], [.5], s=marker_size, c=[corr_r], 
+                alpha=0.6, cmap="coolwarm", vmin=-1, vmax=1, 
+                transform=ax.transAxes)
+    font_size = abs(corr_r) * 40 + 5
+    ax.annotate(corr_text, [.5, .5,],  xycoords="axes fraction",
+                ha='center', va='center', fontsize=font_size)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+
+
+cols = pd.MultiIndex.from_tuples([
+    ( 'elements',  '0'), ( 'elements',  '1'), ( 'elements',  '2'),
+    ( 'elements',  '3'), ( 'elements',  '4'), ( 'elements',  '5'), 
+    ( 'elements',  '6'), ( 'elements',  '7'), ( 'elements',  '8'),
+    ( 'elements',  '9'), ( 'elements', '10'), ( 'elements', '11'),
+    ( 'elements', '12'), ( 'elements', '13'), ( 'elements', '14'),
+    ( 'elements', '15'), ( 'elements', '16'), ( 'elements', '17'),
+    ( 'elements', '18'), ( 'at_fracs',  '0'), ( 'at_fracs',  '1'),
+    ( 'at_fracs',  '2'), ( 'at_fracs',  '3'), ( 'at_fracs',  '4'),
+    ( 'at_fracs',  '5'), ( 'at_fracs',  '6'), ( 'at_fracs',  '7'),
+    ( 'at_fracs',  '8'), ( 'at_fracs',  '9'), ( 'at_fracs', '10'),
+    ( 'at_fracs', '11'), ( 'at_fracs', '12'), ( 'at_fracs', '13'),
+    ( 'at_fracs', '14'), ( 'at_fracs', '15'), ( 'at_fracs', '16'),
+    ( 'at_fracs', '17'), ( 'at_fracs', '18'), ('prop_name',  '0'),
+    ( 'prop_val',  '0'), (  'prop_id',  '0'),
+    ])
+
+
+def plot_YM_correlation():
+    df1 = pd.read_csv(
+        'datasets/YoungsModulus293K/all.csv', 
+        index_col = 0, 
+        header = [0,1]
+        )
+    df2 = pd.read_csv(
+        'datasets/Density293K/all.csv', 
+        index_col = 0, 
+        header = [0,1]
+        )
+    df3 = pd.read_csv(
+        'datasets/RefractiveIndex/all.csv', 
+        index_col = 0, 
+        header = [0,1]
+        )
+    df_all = pd.concat(
+        [df1, df2, df3], 
+        join='outer'
+        ).fillna('X').sort_index(axis=1, level=0)
+    
+    df_all = df_all[cols]
+    df_filtered = df_all[df_all.index.duplicated(keep=False)]
+    df = pd.DataFrame({
+        'ind': df_filtered.index, 
+        'prop_name': df_filtered[('prop_name', '0')], 
+        'prop_val': df_filtered[('prop_val', '0')]
+        })
+    df_result = df.pivot(index = 'ind', columns='prop_name', 
+                            values='prop_val')
+    sns.set_theme(style='white', font_scale=1.6)
+    g = sns.PairGrid(df_result, aspect=1.4, diag_sharey=False)
+    g.map_lower(sns.regplot, lowess=True, ci=False, 
+                line_kws={'color': 'black'}, scatter_kws={'s': 5})
+    g.map_diag(sns.histplot, kde=True, bins=50)
+    g.map_upper(corrdot)
+    g.figure.savefig(
+        'results/paper/eval//YM_correlation.png', 
+        dpi=600,
+        bbox_inches='tight', 
+        pad_inches=0, 
+        transparent=True
+        )
+
+
+def plot_LogViscosity_correlation():
+    # Prepare datasets
+    dfs = []
+    dfs_names = ['773K', '873K', '973K', '1073K', '1173K', '1273K',
+                '1373K', '1473K', '1573K', '1673K', '1773K', '1873K',
+                '2073K']
+    for logVic in dfs_names:
+        df1 = pd.read_csv(
+            'datasets/Tg/all.csv', 
+            index_col = 0, 
+            header = [0,1]
+            )
+        df2 = pd.read_csv(
+            f'datasets/LogViscosity{logVic}/all.csv', 
+            index_col = 0, 
+            header = [0,1]
+            )
+        df_all = pd.concat(
+            [df1, df2], 
+            join='outer'
+            ).fillna('X').sort_index(axis=1, level=0)
+        df_all = df_all[cols]
+        df_filtered = df_all[df_all.index.duplicated(keep=False)]
+        df = pd.DataFrame({
+            'ind': df_filtered.index, 
+            'prop_name': df_filtered[('prop_name', '0')], 
+            'prop_val': df_filtered[('prop_val', '0')]
+            })
+        df_result = df.pivot(
+            index = 'ind', 
+            columns='prop_name', 
+            values='prop_val'
+            )
+        df_result = df_result[sorted(df_result.columns, reverse=True)]
+        dfs.append(df_result)
+
+    # Generate PairGrid images
+    images = []
+    for data in dfs:
+        sns.set_theme(style='white', font_scale=1.2)
+        g = sns.PairGrid(data, aspect=1.0, diag_sharey=False)
+        g.map_lower(
+            sns.regplot, 
+            lowess=True, 
+            ci=False, 
+            line_kws={'color': 'black'}, 
+            scatter_kws={'s': 10}
+            )
+        g.map_diag(sns.histplot, kde=True, bins = 20)
+        g.map_upper(corrdot)
+        g.figure.subplots_adjust(wspace=0, hspace=0)
+        plt.tight_layout(pad=0)
+
+        # Save to memory
+        buf = BytesIO()
+        g.figure.savefig(buf, bbox_inches='tight', pad_inches=0, dpi=150)
+        buf.seek(0)
+        images.append(Image.open(buf))
+        plt.close(g.fig)
+
+    # FIGURE 1: first 4 datasets in 2x2 grid
+    fig1, axes1 = plt.subplots(2, 2, figsize=(12, 12))
+    axes1 = axes1.flatten()
+    for i in range(4):
+        axes1[i].imshow(images[i])
+        axes1[i].axis("off")
+        axes1[i].set_title(dfs_names[i], fontsize=14)
+    plt.savefig('results/paper/eval/LogViscosity_correlation1.png', 
+        dpi = 600, 
+        bbox_inches='tight', 
+        pad_inches=0, 
+        transparent=True
+        )
+
+    # FIGURE 2: remaining 9 datasets in 3x3 grid
+    fig2, axes2 = plt.subplots(3, 3, figsize=(15, 15))
+    axes2 = axes2.flatten()
+    for i in range(9):
+        axes2[i].imshow(images[i + 4])  # offset by 4
+        axes2[i].axis("off")
+        axes2[i].set_title(dfs_names[i + 4], fontsize=14)
+    plt.savefig('results/paper/eval/LogViscosity_correlation2.png', 
+        dpi = 600, 
+        bbox_inches='tight', 
+        pad_inches=0, 
+        transparent=True
+        )

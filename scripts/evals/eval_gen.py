@@ -15,6 +15,7 @@ if __name__ == '__main__':
         ]
     exps = ['only_p1_single', 'aux_p_pad', 'aux_p_random_pad']
 
+    print('Samples')
     Samples = eval_utils.Samples(
         ident, 
         props, 
@@ -24,9 +25,14 @@ if __name__ == '__main__':
     Samples.samples_all()
     Samples.stats()
 
+    print('Errors')
     Errors = eval_utils.Errors(ident, props, exps, seeds = [1, 42, 100])
     Errors.save_errors()
     Errors.linear_fit()
     Errors.plot_YM()
     Errors.plot_YM_MAE()
     Errors.plot_LogViscosity()
+
+    print('Correlation plots')
+    eval_utils.plot_YM_correlation()
+    eval_utils.plot_LogViscosity_correlation()
